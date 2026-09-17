@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoreLink - 在庫連携・他店舗検索プラットフォーム</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-light: #f8fafc;
+            --text-dark: #0f172a;
+            --text-muted: #475569;
+            --border-color: #e2e8f0;
+            --white: #ffffff;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 8%;
+            background: var(--white);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .logo span { color: var(--primary); }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover { color: var(--primary); }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        .btn-secondary {
+            background-color: #cbd5e1;
+            color: var(--text-dark);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 80px 8%;
+            text-align: center;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: #dbeafe;
+            color: #1e40af;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 20px;
+            margin-bottom: 15px;
+        }
+
+        .hero h1 {
+            font-size: 2.3rem;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto 25px auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        /* Section Titles */
+        .section-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .section-title h2 { font-size: 1.8rem; color: var(--text-dark); }
+        .section-title p { color: var(--text-muted); }
+
+        /* Features */
+        .features { padding: 70px 8%; }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-icon {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        /* Demo Section */
+        .demo-section {
+            background: var(--white);
+            padding: 70px 8%;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .search-box {
+            margin: 0 auto 30px auto;
+            max-width: 600px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .results-container {
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        .result-item {
+            background: #f1f5f9;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--primary);
+        }
+
+        /* Canvas Section */
+        .canvas-section { padding: 70px 8%; }
+
+        .canvas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .canvas-box {
+            background: var(--white);
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .canvas-box h4 {
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+
+        .canvas-box ul {
+            list-style-type: square;
+            padding-left: 20px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Modal Popup */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .success-icon {
+            font-size: 3rem;
+            color: #22c55e;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            background: var(--text-dark);
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Header -->
+    <header class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-boxes-stacked"></i> Store<span>Link</span>
+        </div>
+        <nav class="nav-links">
+            <a href="#home">ホーム (Home)</a>
+            <a href="#features">特徴 (Features)</a>
+            <a href="#demo">検索デモ (Demo)</a>
+            <a href="#canvas">事業モデル (Canvas)</a>
+        </nav>
+        <button class="btn-primary" onclick="scrollToSection('demo')">デモを試す</button>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <span class="badge"><i class="fa-solid fa-bolt"></i> 在庫連携プラットフォーム</span>
+            <h1>在庫切れによる機会損失をゼロに</h1>
+            <p>他店舗の在庫をリアルタイムで検索し、その場でお取り寄せや自宅配送の手配を可能にする店舗向けソリューションシステムです。</p>
+            <div class="hero-buttons">
+                <button class="btn-primary" onclick="scrollToSection('demo')">在庫検索デモを実行</button>
+                <button class="btn-secondary" onclick="scrollToSection('canvas')">キャンバスモデルを見る</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="features">
+        <div class="section-title">
+            <h2>システムの主な特徴</h2>
+            <p>店舗スタッフの業務をサポートし、売上機会を最大化します。</p>
+        </div>
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-magnifying-glass-location"></i></div>
+                <h3>他店舗の在庫検索</h3>
+                <p>自店舗で商品が在庫切れの際、タブレットやPCから素早く周辺店舗の在庫を確認できます。</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-truck-fast"></i></div>
+                <h3>簡単取り寄せ・配送手配</h3>
+                <p>お客様の要望に合わせて、他店からの店舗間移動や自宅への直接配送を迅速に手配できます。</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
+                <h3>顧客満足度と売上の向上</h3>
+                <p>「商品がない」ことによる顧客の離脱を防ぎ、リピーター獲得と売上アップに貢献します。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="demo-section">
+        <div class="container">
+            <div class="section-title">
+                <h2>在庫検索・手配 インタラクティブデモ</h2>
+                <p>検索ボックスに商品名を入力して、他店舗の在庫状況を検索できます。</p>
+            </div>
+            
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="例：ランニングシューズ, デニムジャケット">
+                <button class="btn-primary" onclick="performSearch()"><i class="fa-solid fa-search"></i> 在庫確認</button>
+            </div>
+
+            <div id="results" class="results-container"></div>
+        </div>
+    </section>
+
+    <!-- Canvas Mapping -->
+    <section id="canvas" class="canvas-section">
+        <div class="section-title">
+            <h2>ビジネスモデルキャンバス概要</h2>
+            <p>事業計画に基づく核心要素のまとめ</p>
+        </div>
+
+        <div class="canvas-grid">
+            <div class="canvas-box">
+                <h4><i class="fa-solid fa-handshake"></i> パートナー (Partners)</h4>
+                <ul>
+                    <li>他店舗 / 本部</li>
+                    <li>配送会社 (ロジスティクス)</li>
+                    <li>システム開発会社</li>
+                </ul>
+            </div>
+            <div class="canvas-box">
+                <h4><i class="fa-solid fa-tasks"></i> 主要活動 (Activities)</h4>
+                <ul>
+                    <li>在庫確認・検索</li>
+                    <li>お取り寄せ手配</li>
+                    <li>お客様案内サポート</li>
+                </ul>
+            </div>
+            <div class="canvas-box">
+                <h4><i class="fa-solid fa-gift"></i> 価値提案 (Value Prop)</h4>
+                <ul>
+                    <li>在庫がなくても商品をご案内</li>
+                    <li>欲しい商品が早く見つかる</li>
+                    <li>お客様満足度の向上</li>
+                </ul>
+            </div>
+            <div class="canvas-box">
+                <h4><i class="fa-solid fa-users"></i> 顧客セグメント (Customers)</h4>
+                <ul>
+                    <li>店舗に来店するお客様</li>
+                    <li>欲しい商品が売り切れで困っているお客様</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Order Modal -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div class="modal-header">
+                <i class="fa-solid fa-circle-check success-icon"></i>
+                <h3>お取り寄せ手配完了</h3>
+            </div>
+            <p id="modalMessage">手配リクエストが送信されました。</p>
+            <br>
+            <button class="btn-primary" onclick="closeModal()">閉じる</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 StoreLink Platform. Multi-Branch Retail Solution.</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Demo Search Database
+        const mockDatabase = [
+            { name: "ランニングシューズ", branch: "渋谷店 (Shibuya)", stock: 8, distance: "1.2 km" },
+            { name: "ランニングシューズ", branch: "新宿店 (Shinjuku)", stock: 15, distance: "3.5 km" },
+            { name: "デニムジャケット", branch: "銀座店 (Ginza)", stock: 4, distance: "4.0 km" },
+            { name: "Tシャツ", branch: "秋葉原店 (Akihabara)", stock: 10, distance: "2.1 km" }
+        ];
+
+        function performSearch() {
+            const input = document.getElementById("searchInput").value.toLowerCase().trim();
+            const resultsContainer = document.getElementById("results");
+
+            resultsContainer.innerHTML = "";
+
+            if (!input) {
+                resultsContainer.innerHTML = `<p style="text-align:center; color:#64748b;">検索キーワードを入力してください。</p>`;
+                return;
+            }
+
+            const matches = mockDatabase.filter(item => item.name.toLowerCase().includes(input));
+
+            if (matches.length > 0) {
+                matches.forEach(item => {
+                    const div = document.createElement("div");
+                    div.className = "result-item";
+                    div.innerHTML = `
+                        <div>
+                            <strong>${item.name}</strong> - <span style="color:#2563eb; font-weight:600;">${item.branch}</span>
+                            <br><small style="color:#64748b;">距離: ${item.distance} | 在庫数: ${item.stock} 個</small>
+                        </div>
+                        <button class="btn-primary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="openOrderModal('${item.name}', '${item.branch}')">取り寄せる</button>
+                    `;
+                    resultsContainer.appendChild(div);
+                });
+            } else {
+                resultsContainer.innerHTML = `<p style="text-align:center; color:#ef4444;">指定された商品の在庫が見つかりませんでした。</p>`;
+            }
+        }
+
+        function openOrderModal(itemName, branchName) {
+            const modal = document.getElementById("orderModal");
+            const message = document.getElementById("modalMessage");
+            message.innerText = `「${itemName}」を ${branchName} から取り寄せるリクエストを送信しました。`;
+            modal.style.display = "flex";
+        }
+
+        function closeModal() {
+            document.getElementById("orderModal").style.display = "none";
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
